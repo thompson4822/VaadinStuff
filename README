@@ -1,0 +1,3 @@
+The purpose of this project is to serve as a foundation for my forays into Vaadin, especially
+using the Scala programming language.  To that end I've begun to write a simple ScalaVaadin
+library which I anticipate should grow as I get more experience with Vaadin itself.
