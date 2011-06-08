@@ -7,9 +7,10 @@ object NavigationTree {
   val SEARCH = "Search"
 }
 
-class NavigationTree extends Tree {
+class NavigationTree(action: ItemClickEvent => Unit) extends Tree(action) {
   import NavigationTree._
   addItem(SHOW_ALL)
   addItem(SEARCH)
-
+  setSelectable(true)
+  setNullSelectionAllowed(false)
 }

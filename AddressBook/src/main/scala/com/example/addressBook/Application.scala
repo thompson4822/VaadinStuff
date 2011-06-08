@@ -17,7 +17,15 @@ class Application extends VaadinApplication {
   private val search = new Button("Search", _ => horizontalSplit.setSecondComponent(searchView))
   private val share = new Button("Share", _ => getMainWindow addWindow sharingOptions)
   private val help = new Button("Help", _ => getMainWindow addWindow helpWindow)
-  private val navigationTree = new NavigationTree
+
+  private val navigationTree = new NavigationTree(navigateTreeAction)
+
+  def navigateTreeAction(event: ItemClickEvent) {
+    horizontalSplit.setSecondComponent(event.getItemId match {
+      case NavigationTree.SHOW_ALL => listView
+      case NavigationTree.SEARCH => searchView
+    })
+  }
 
   val dataSource = PersonContainer()
 
