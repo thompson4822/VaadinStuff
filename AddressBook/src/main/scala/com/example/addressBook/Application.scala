@@ -1,13 +1,5 @@
 package com.example.addressBook
 
-/**
- * Created by IntelliJ IDEA.
- * User: Steve
- * Date: 6/5/11
- * Time: 10:08 AM
- * To change this template use File | Settings | File Templates.
- */
-
 import data.PersonContainer
 import org.scalaVaadin._
 import ui._
