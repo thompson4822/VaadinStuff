@@ -5,6 +5,7 @@ import scala.xml.Elem
 import io.BytePickle.Def
 import scalaVaadin.UnitExtent
 import java.lang.Boolean
+import com.vaadin.event.ItemClickEvent.ItemClickListener
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,11 +27,11 @@ package object scalaVaadin {
   type HorizontalLayout = com.vaadin.ui.HorizontalLayout
   type HorizontalSplitPanel = com.vaadin.ui.HorizontalSplitPanel
   type IntegerValidator = com.vaadin.data.validator.IntegerValidator
+  type ItemClickEvent = com.vaadin.event.ItemClickEvent
   type Label = com.vaadin.ui.Label
   type Panel = com.vaadin.ui.Panel
   type TextArea = com.vaadin.ui.TextArea
   type TextField = com.vaadin.ui.TextField
-  type Tree = com.vaadin.ui.Tree
   type VaadinApplication = com.vaadin.Application
   type ValueChangeEvent = com.vaadin.data.Property.ValueChangeEvent
   type VerticalLayout = com.vaadin.ui.VerticalLayout
@@ -122,6 +123,13 @@ package object scalaVaadin {
     }
   }
 
+  class Tree(action: ItemClickEvent => Unit = null) extends com.vaadin.ui.Tree {
+    if(action != null) {
+      addListener(new ItemClickListener {
+        def itemClick(event: ItemClickEvent) { action(event) }
+      })
+    }
+  }
 
   implicit def componentContainerToRichComponentContainer(container: com.vaadin.ui.ComponentContainer) =
     new RichComponentContainer(container)
