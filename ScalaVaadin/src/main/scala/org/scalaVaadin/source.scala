@@ -27,6 +27,7 @@ package object scalaVaadin {
   type HorizontalLayout = com.vaadin.ui.HorizontalLayout
   type HorizontalSplitPanel = com.vaadin.ui.HorizontalSplitPanel
   type IntegerValidator = com.vaadin.data.validator.IntegerValidator
+  type Item = com.vaadin.data.Item
   type ItemClickEvent = com.vaadin.event.ItemClickEvent
   type Label = com.vaadin.ui.Label
   type Panel = com.vaadin.ui.Panel
@@ -117,7 +118,7 @@ package object scalaVaadin {
 
   class Table extends com.vaadin.ui.Table {
     def addListener(f: ValueChangeEvent => Unit) { addListener(new ValueChangeListener(f)) }
-    def setColumns(columns: ColumnDefinition*) = {
+    def setColumns(columns: List[ColumnDefinition]) = {
       setVisibleColumns(columns.map(_.field).toArray)
       setColumnHeaders(columns.map(_.title).toArray)
     }
