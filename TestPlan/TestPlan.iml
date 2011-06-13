@@ -4,7 +4,7 @@
     <facet type="scala" name="Scala">
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="scala-compiler-2.9.0 (6)" />
+        <option name="compilerLibraryName" value="scala-compiler-2.9.0 (7)" />
       </configuration>
     </facet>
   </component>
@@ -12,22 +12,12 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/scala" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/target/scala" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="scala-library-2.9.0 (6)" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/lib_managed/scala_2.9.0/compile" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib_managed/scala_2.9.0/compile/vaadin-6.6.0.jar!/" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/lib_managed/scala_2.9.0/compile" recursive="false" />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="scala-library-2.9.0 (7)" level="project" />
+    <orderEntry type="module" module-name="ScalaVaadin" />
   </component>
 </module>
 

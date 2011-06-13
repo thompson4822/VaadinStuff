@@ -13,15 +13,20 @@ class Application extends VaadinApplication {
   private val navigationTree = new NavigationTree(navigateTreeAction)
 
   def navigateTreeAction(event: ItemClickEvent) {
-    horizontalSplit.setSecondComponent(event.getItemId match {
-      case NavigationTree.SHOW_ALL => listView
-      case NavigationTree.SEARCH => searchView
-    })
+    event.getItemId match {
+      case NavigationTree.SHOW_ALL => showListView()
+      case NavigationTree.SEARCH => showSearchView()
+    }
   }
+
+  def showListView() { horizontalSplit.setSecondComponent(listView) }
+
+  def showSearchView() { horizontalSplit.setSecondComponent(searchView) }
+
 
   val dataSource = PersonContainer()
 
-  private val personForm: PersonForm = new PersonForm
+  private val personForm: PersonForm = new PersonForm(dataSource)
   private lazy val personList: PersonList = new PersonList(dataSource, {
     _ =>
       val item = personList.getItem(personList.getValue)
@@ -73,6 +78,9 @@ class Application extends VaadinApplication {
     lo
   }
 
-  private def onAddContact(event: ButtonClickEvent) {}
+  private def onAddContact(event: ButtonClickEvent) {
+    showListView()
+    personForm.addContact
+  }
 
 }

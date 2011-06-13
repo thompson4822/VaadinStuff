@@ -2,21 +2,12 @@ package org
 
 import com.vaadin.ui.{Label, Window}
 import scala.xml.Elem
-import io.BytePickle.Def
-import scalaVaadin.UnitExtent
 import java.lang.Boolean
 import com.vaadin.event.ItemClickEvent.ItemClickListener
-
-/**
- * Created by IntelliJ IDEA.
- * User: Steve
- * Date: 5/30/11
- * Time: 7:38 AM
- * To change this template use File | Settings | File Templates.
- */
+import scala.collection.JavaConverters._
 
 package object scalaVaadin {
-
+  type Alignment = com.vaadin.ui.Alignment
   type BeanItem[A] = com.vaadin.data.util.BeanItem[A]
   type BeanItemContainer[A] = com.vaadin.data.util.BeanItemContainer[A]
   type ButtonClickEvent = com.vaadin.ui.Button#ClickEvent
@@ -39,6 +30,17 @@ package object scalaVaadin {
   type VerticalSplitPanel = com.vaadin.ui.VerticalSplitPanel
   type Window = com.vaadin.ui.Window
   type WindowCloseEvent = Window#CloseEvent
+
+  // setComponentAlignment(component left center)
+
+  object Alignment {
+    val ALIGNMENT_LEFT: Int = 1
+    val ALIGNMENT_RIGHT: Int = 2
+    val ALIGNMENT_TOP: Int = 4
+    val ALIGNMENT_BOTTOM: Int = 8
+    val ALIGNMENT_HORIZONTAL_CENTER: Int = 16
+    val ALIGNMENT_VERTICAL_CENTER: Int = 32
+  }
 
   implicit def intToUnitExtent(value: Int) = floatToUnitExtent(value)
 
@@ -75,6 +77,28 @@ package object scalaVaadin {
     def setHeight(extent: UnitExtent) = s.setHeight(extent.value, extent.unit)
   }
 
+  implicit def abstractOrderedLayoutToRichAbstractOrderedLayout(layout: com.vaadin.ui.AbstractOrderedLayout) =
+    new RichAbstractOrderedLayout(layout)
+
+  class RichAbstractOrderedLayout(layout: com.vaadin.ui.AbstractOrderedLayout) {
+    class AlignmentContext(component: com.vaadin.ui.Component) {
+      import com.vaadin.ui.Alignment._
+      def topLeft = layout.setComponentAlignment(component, TOP_LEFT)
+      def topCenter = layout.setComponentAlignment(component, TOP_CENTER)
+      def topRight = layout.setComponentAlignment(component, TOP_RIGHT)
+
+      def middleLeft = layout.setComponentAlignment(component, MIDDLE_LEFT)
+      def middleCenter = layout.setComponentAlignment(component, MIDDLE_CENTER)
+      def middleRight = layout.setComponentAlignment(component, MIDDLE_CENTER)
+
+      def bottomLeft = layout.setComponentAlignment(component, BOTTOM_LEFT)
+      def bottomCenter = layout.setComponentAlignment(component, BOTTOM_CENTER)
+      def bottomRight = layout.setComponentAlignment(component, BOTTOM_RIGHT)
+    }
+    def align(component: com.vaadin.ui.Component) = new AlignmentContext(component)
+    def components: Iterator[Component] = layout.getComponentIterator.asScala
+  }
+
   implicit def abstractSplitPanelToRichAbstractSplitPanel(panel: com.vaadin.ui.AbstractSplitPanel) =
     new RichAbstractSplitPanel(panel)
 
@@ -91,22 +115,7 @@ package object scalaVaadin {
     def setWidth(extent: UnitExtent) = component.setWidth(extent.toString())
   }
 
-/*
-  object Sizable {
-    val CM: Int = com.vaadin.terminal.Sizeable.UNITS_CM
-    val EM: Int = com.vaadin.terminal.Sizeable.UNITS_EM
-    val EX: Int = com.vaadin.terminal.Sizeable.UNITS_EX
-    val IN: Int = com.vaadin.terminal.Sizeable.UNITS_INCH
-    val MM: Int = com.vaadin.terminal.Sizeable.UNITS_MM
-    val PERCENT: Int = com.vaadin.terminal.Sizeable.UNITS_PERCENTAGE
-    val PICAS: Int = com.vaadin.terminal.Sizeable.UNITS_PICAS
-    val PX: Int = com.vaadin.terminal.Sizeable.UNITS_PIXELS
-    val PTS: Int = com.vaadin.terminal.Sizeable.UNITS_POINTS
-  }
-*/
-
-  class ValueChangeListener(f: ValueChangeEvent => Unit) extends com.vaadin.data.Property.ValueChangeListener
-  {
+  class ValueChangeListener(f: ValueChangeEvent => Unit) extends com.vaadin.data.Property.ValueChangeListener {
     override def valueChange(event:ValueChangeEvent) { f(event) }
   }
 
@@ -155,20 +164,5 @@ package object scalaVaadin {
     def windowClose(event: WindowCloseEvent) { action(event) }
   }
 
-/*
-  implicit def intToSizeUnit(value: Int) = new SizeUnit(value)
-
-  class SizeUnit(size: Int) {
-    def px = size + "px"
-    def pt = size + "pt"
-    def pc = size + "pc"
-    def em = size + "em"
-    def ex = size + "ex"
-    def mm = size + "mm"
-    def cm = size + "cm"
-    def in = size + "in"
-    def percent = size + "%"
-  }
-*/
 }
 

@@ -13,6 +13,7 @@ class Project(info: ProjectInfo) extends ParentProject(info) {
   lazy val spike = project("spike", "spike", new DefaultWebProject(_), scalaVaadin)
   lazy val bookProject = project("BookProject", "BookProject", new DefaultWebProject(_), scalaVaadin)
   lazy val addressBookProject = project("AddressBook", "AddressBook", new DefaultWebProject(_), scalaVaadin)
+  lazy val testPlan = project("TestPlan", "TestPlan", new DefaultWebProject(_), scalaVaadin)
   
   class ScalaVaadinProject(info: ProjectInfo) extends DefaultProject(info)
   {
