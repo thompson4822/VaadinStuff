@@ -21,21 +21,44 @@ class TestPlanApplication extends VaadinApplication {
     result
   }
 
+  def handleMenuAction(menuItem: MenuItem) {
+    println("You just clicked on " + menuItem.getText + " in the menu.")
+  }
+
   val mainMenu = {
-    val result = new HorizontalLayout
-    val label = new HtmlLabel(<b>Test Plan</b>)
+    val menu = new MenuBar
+    val result = new VerticalLayout
     result.setDescription("Test Plan")
     result.addComponents(
+      menu
+/*
       label,
       projectsButton,
       new Button("Log In", _ => ()))
+*/
+    )
+    val beverages = menu.add("Beverages")
+    val hot = beverages.add("Hot")
+    hot.add("Tea", handleMenuAction)
+    hot.add("Coffee", handleMenuAction)
+    val cold = beverages.addItem("Cold", null, null)
+    cold.addItem("Milk", null, null)
+
+    val snacks = menu.addItem("Snacks", null, null)
+    snacks.addItem("Weisswurst", null, null)
+    snacks.addItem("Salami", null, null)
+
+    val services = menu.addItem("Services", null, null)
+    services.addItem("Car Service", null, null)
+
+
     result.setSpacing(true)
 
     // Individual alignment
-    result align label bottomLeft
+    //result align label bottomLeft
 
     // Group alignment
-    result.components.foreach(c => result align c middleCenter)
+    //result.components.foreach(c => result align c middleCenter)
 
     result
   }

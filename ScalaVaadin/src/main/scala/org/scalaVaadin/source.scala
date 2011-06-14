@@ -21,7 +21,10 @@ package object scalaVaadin {
   type Item = com.vaadin.data.Item
   type ItemClickEvent = com.vaadin.event.ItemClickEvent
   type Label = com.vaadin.ui.Label
+  type MenuBar = com.vaadin.ui.MenuBar
+  type MenuItem = com.vaadin.ui.MenuBar#MenuItem
   type Panel = com.vaadin.ui.Panel
+  type Resource = com.vaadin.terminal.Resource
   type TextArea = com.vaadin.ui.TextArea
   type TextField = com.vaadin.ui.TextField
   type VaadinApplication = com.vaadin.Application
@@ -97,6 +100,19 @@ package object scalaVaadin {
     }
     def align(component: com.vaadin.ui.Component) = new AlignmentContext(component)
     def components: Iterator[Component] = layout.getComponentIterator.asScala
+  }
+
+  class MenuBarCommand(action: MenuItem => Unit) extends com.vaadin.ui.MenuBar.Command {
+    def menuSelected(selectedItem: MenuItem) = action(selectedItem)
+  }
+
+  implicit def menuThingToRichMenuThing(menuThing: { def addItem(caption: String, icon: Resource, command: com.vaadin.ui.MenuBar.Command): MenuItem }) = new {
+    def add(caption: String, action: MenuItem => Unit = null, icon: Resource = null): MenuItem = {
+      if(action != null)
+        menuThing.addItem(caption, icon, new MenuBarCommand(action))
+      else
+        menuThing.addItem(caption, icon, null)
+    }
   }
 
   implicit def abstractSplitPanelToRichAbstractSplitPanel(panel: com.vaadin.ui.AbstractSplitPanel) =
