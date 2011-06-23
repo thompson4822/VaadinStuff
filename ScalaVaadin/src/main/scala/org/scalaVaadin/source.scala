@@ -3,9 +3,6 @@ package org
 import scala.xml.Elem
 import com.vaadin.event.ItemClickEvent.ItemClickListener
 import scala.collection.JavaConverters._
-import scala.reflect.Manifest
-import javax.sql.rowset.Predicate
-import com.vaadin.data.Property.{ValueChangeEvent, ValueChangeListener}
 
 package object scalaVaadin {
   //type AbstractInMemoryContainer[ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS] = com.vaadin.data.util.AbstractInMemoryContainer[ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS]
@@ -15,6 +12,10 @@ package object scalaVaadin {
   type ButtonClickEvent = com.vaadin.ui.Button#ClickEvent
   type CheckBox = com.vaadin.ui.CheckBox
   type Component = com.vaadin.ui.Component
+  type ComponentAttachEvent = com.vaadin.ui.ComponentContainer.ComponentAttachEvent
+  type ComponentDetachEvent = com.vaadin.ui.ComponentContainer.ComponentDetachEvent
+  type ComponentEvent = com.vaadin.ui.Component.Event
+  type ComponentErrorEvent = com.vaadin.ui.AbstractComponent.ComponentErrorEvent
   type CustomComponent = com.vaadin.ui.CustomComponent
   type Form = com.vaadin.ui.Form
   type HierarchicalContainer = com.vaadin.data.util.HierarchicalContainer
@@ -24,10 +25,13 @@ package object scalaVaadin {
   type Item = com.vaadin.data.Item
   type ItemClickEvent = com.vaadin.event.ItemClickEvent
   type Label = com.vaadin.ui.Label
+  type LayoutClickEvent = com.vaadin.event.LayoutEvents.LayoutClickEvent
   type MenuBar = com.vaadin.ui.MenuBar
   type MenuItem = com.vaadin.ui.MenuBar#MenuItem
   type Panel = com.vaadin.ui.Panel
   type Property = com.vaadin.data.Property
+  type ReadOnlyStatusChangeEvent = com.vaadin.data.Property.ReadOnlyStatusChangeEvent
+  type RepaintRequestEvent = com.vaadin.terminal.Paintable.RepaintRequestEvent
   type Resource = com.vaadin.terminal.Resource
   type TextArea = com.vaadin.ui.TextArea
   type TextField = com.vaadin.ui.TextField
@@ -69,13 +73,20 @@ package object scalaVaadin {
     new RichAbstractComponent(component)
 
   class RichAbstractComponent(component: com.vaadin.ui.AbstractComponent) {
+    class ComponentErrorHandler(action: ComponentErrorEvent => Boolean) extends com.vaadin.ui.AbstractComponent.ComponentErrorHandler {
+      def handleComponentError(event: ComponentErrorEvent) = action(event)
+    }
+
     def setCaption(caption: Elem) { component.setCaption(caption.toString()) }
     def setDescription(description: Elem) { component.setDescription(description.toString()) }
+    def onError(action: ComponentErrorEvent => Boolean) = component.setErrorHandler(new ComponentErrorHandler(action))
 
     // Would like to add the following:
+/*
     def isVisible(predicate: => Boolean) { }
     def isEnabled(predicate: => Boolean) { }
     def isReadOnly(predicate: => Boolean) { }
+*/
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -86,7 +97,8 @@ package object scalaVaadin {
   implicit def abstractFieldToRichAbstractField(field: com.vaadin.ui.AbstractField) = new RichAbstractField(field)
 
   class RichAbstractField(field: com.vaadin.ui.AbstractField) {
-    def addValueChangeEvent(action: ValueChangeEvent => Unit) = field.addListener(new ValueChangeListener(action))
+    def onValueChange(action: ValueChangeEvent => Unit) = field.addListener(new ValueChangeListener(action))
+    def onReadOnlyStatusChange(action: ReadOnlyStatusChangeEvent => Unit) = field.addListener(new ReadOnlyStatusChangeListener(action))
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -98,6 +110,10 @@ package object scalaVaadin {
     new RichAbstractOrderedLayout(layout)
 
   class RichAbstractOrderedLayout(layout: com.vaadin.ui.AbstractOrderedLayout) {
+    class LayoutClickListener(action: LayoutClickEvent => Unit) extends com.vaadin.event.LayoutEvents.LayoutClickListener {
+      def layoutClick(event: LayoutClickEvent) { action(event) }
+    }
+
     class AlignmentContext(component: com.vaadin.ui.Component) {
       import com.vaadin.ui.Alignment._
       def topLeft() { layout.setComponentAlignment(component, TOP_LEFT) }
@@ -114,6 +130,7 @@ package object scalaVaadin {
     }
     def align(component: com.vaadin.ui.Component) = new AlignmentContext(component)
     def components: Iterator[Component] = layout.getComponentIterator.asScala
+    def onLayoutClick(action: LayoutClickEvent => Unit) { layout.addListener(new LayoutClickListener(action)) }
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -130,6 +147,48 @@ package object scalaVaadin {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // RichComponent
+  //
+  ///////////////////////////////////////////////////////////////////
+  implicit def componentToRichComponent(component: com.vaadin.ui.Component) = new RichComponent(component)
+
+  class RichComponent(component: com.vaadin.ui.Component) {
+    class Listener(action:ComponentEvent => Unit) extends com.vaadin.ui.Component.Listener {
+      def componentEvent(event: ComponentEvent) { action(event) }
+    }
+
+    def onEvent(action: ComponentEvent => Unit) { component.addListener(new Listener(action)) }
+  }
+
+  ///////////////////////////////////////////////////////////////////
+  //
+  // RichComponentContainer
+  //
+  ///////////////////////////////////////////////////////////////////
+  implicit def componentContainerToRichComponentContainer(container: com.vaadin.ui.ComponentContainer) =
+    new RichComponentContainer(container)
+
+  class RichComponentContainer(container: com.vaadin.ui.ComponentContainer) {
+    class ComponentAttachListener(action: ComponentAttachEvent => Unit) extends com.vaadin.ui.ComponentContainer.ComponentAttachListener {
+      def componentAttachedToContainer(event: ComponentAttachEvent) { action(event) }
+    }
+
+    class ComponentDetachListener(action: ComponentDetachEvent => Unit) extends com.vaadin.ui.ComponentContainer.ComponentDetachListener {
+      def componentDetachedFromContainer(event: ComponentDetachEvent) { action(event) }
+    }
+
+    def onAttach(action: ComponentAttachEvent => Unit) { container.addListener(new ComponentAttachListener(action)) }
+    def onDetach(action: ComponentDetachEvent => Unit) { container.addListener(new ComponentDetachListener(action)) }
+    def addComponents(components: com.vaadin.ui.Component*) { components.foreach(container.addComponent(_)) }
+  }
+
+  ///////////////////////////////////////////////////////////////////
+  //
+  // RichSizable
+  //
+  ///////////////////////////////////////////////////////////////////
   implicit def intToUnitExtent(value: Int) = floatToUnitExtent(value)
 
   implicit def floatToUnitExtent(value: Float) = new {
@@ -174,6 +233,11 @@ package object scalaVaadin {
 
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // Menu Related
+  //
+  ///////////////////////////////////////////////////////////////////
   class MenuBarCommand(action: MenuItem => Unit) extends com.vaadin.ui.MenuBar.Command {
     def menuSelected(selectedItem: MenuItem) { action(selectedItem) }
   }
@@ -216,6 +280,10 @@ package object scalaVaadin {
   }
 */
 
+  class ReadOnlyStatusChangeListener(action: ReadOnlyStatusChangeEvent => Unit) extends com.vaadin.data.Property.ReadOnlyStatusChangeListener {
+    def readOnlyStatusChange(event: ReadOnlyStatusChangeEvent) { action(event) }
+  }
+
   class ValueChangeListener(f: ValueChangeEvent => Unit) extends com.vaadin.data.Property.ValueChangeListener {
     override def valueChange(event:ValueChangeEvent) { f(event) }
   }
@@ -224,6 +292,11 @@ package object scalaVaadin {
     def this(html:Elem) = { this(html.toString()) }
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // Table Related
+  //
+  ///////////////////////////////////////////////////////////////////
   case class ColumnDefinition(field: String, title: String)
 
   class Table extends com.vaadin.ui.Table {
@@ -234,6 +307,11 @@ package object scalaVaadin {
     }
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // Theme Related
+  //
+  ///////////////////////////////////////////////////////////////////
   object Theme {
     import com.vaadin.ui.themes._
     def reindeer = new Reindeer
@@ -242,6 +320,11 @@ package object scalaVaadin {
     def liferay = new LiferayTheme
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // Tree Related
+  //
+  ///////////////////////////////////////////////////////////////////
   trait TreeExpand {
     self: Tree =>
     def onExpand(action: TreeExpandEvent => Unit) = {
@@ -268,28 +351,50 @@ package object scalaVaadin {
     }
   }
 
-  implicit def componentContainerToRichComponentContainer(container: com.vaadin.ui.ComponentContainer) =
-    new RichComponentContainer(container)
-
-  class RichComponentContainer(container: com.vaadin.ui.ComponentContainer) {
-    def addComponents(components: com.vaadin.ui.Component*) { components.foreach(container.addComponent(_)) }
-  }
-
+  ///////////////////////////////////////////////////////////////////
+  //
+  // RichTextField
+  //
+  ///////////////////////////////////////////////////////////////////
   implicit def textFieldToRichTextField(textField: TextField) = new RichTextField(textField)
 
   class RichTextField(textField: TextField) {
     val text = textField.getValue.toString
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // Button Related
+  //
+  ///////////////////////////////////////////////////////////////////
   class ButtonClickListener(action: ButtonClickEvent => Unit) extends com.vaadin.ui.Button.ClickListener {
     def buttonClick(event: ButtonClickEvent) { action(event) }
   }
 
   class Button(text: String, action: ButtonClickEvent => Unit = null) extends com.vaadin.ui.Button(text, new ButtonClickListener(action))
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // Misc
+  //
+  ///////////////////////////////////////////////////////////////////
   class WindowCloseListener(action: WindowCloseEvent => Unit) extends com.vaadin.ui.Window.CloseListener {
     def windowClose(event: WindowCloseEvent) { action(event) }
   }
 
+  ///////////////////////////////////////////////////////////////////
+  //
+  // RichPaintable
+  //
+  ///////////////////////////////////////////////////////////////////
+  implicit def paintableToRichPaintable(paintable: com.vaadin.terminal.Paintable) = new RichPaintable(paintable)
+
+  class RichPaintable(paintable: com.vaadin.terminal.Paintable) {
+    class RepaintEventListener(action: RepaintRequestEvent => Unit) extends com.vaadin.terminal.Paintable.RepaintRequestListener {
+      def repaintRequested(event: RepaintRequestEvent) { action(event) }
+    }
+
+    def onRepaint(action: RepaintRequestEvent => Unit) = paintable.addListener(new RepaintEventListener(action))
+  }
 }
 
