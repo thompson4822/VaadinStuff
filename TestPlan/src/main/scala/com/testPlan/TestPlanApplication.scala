@@ -1,5 +1,6 @@
 package com.testPlan
 
+import model.{Project, FakeProjects}
 import org.scalaVaadin._
 import xml.Elem
 
@@ -17,8 +18,26 @@ class TestPlanApplication extends VaadinApplication {
 
   val projectsButton = {
     val result = new Button("Projects", _ => ())
-    result.setDescription(projectsTooltip.toString)
+    result.setDescription(projectsTooltip.toString())
     result
+  }
+
+  val exampleTree = {
+    val container = new HierarchicalContainer
+    container.addContainerProperty("icon", classOf[Resource], null)
+    container.addContainerProperty("caption", classOf[String], null)
+    (1 to 10).map {
+      x =>
+      val item = container.addItem()
+      container.getContainerProperty(item, "icon").setValue(new ThemeResource("common/icons/error.png"))
+      container.getContainerProperty(item, "caption").setValue("Item " + x)
+    }
+    val tree = new Tree
+    tree.setContainerDataSource(container)
+    tree.setItemIconPropertyId("icon")
+    tree.setItemCaptionPropertyId("caption")
+    //tree.setItemCaptionMode()
+    tree
   }
 
   def handleMenuAction(menuItem: MenuItem) {
@@ -30,7 +49,8 @@ class TestPlanApplication extends VaadinApplication {
     val result = new VerticalLayout
     result.setDescription("Test Plan")
     result.addComponents(
-      menu
+      menu,
+      exampleTree
 /*
       label,
       projectsButton,
@@ -74,6 +94,13 @@ class TestPlanApplication extends VaadinApplication {
   override def init() {
     val mainWindow = new Window("Test Plan")
     mainWindow.addComponent(layout)
+    mainWindow.addComponent(new NavigationTree)
+
     setMainWindow(mainWindow)
+
+/*
+    val projects: Seq[Project] = FakeProjects()
+    projects.foreach{x => println(); println(x)}
+*/
   }
 }

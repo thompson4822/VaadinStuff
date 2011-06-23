@@ -49,11 +49,11 @@ class Application extends VaadinApplication {
     result
   }
 
-  override def init {
-    buildMainLayout
+  override def init() {
+    buildMainLayout()
   }
 
-  private def buildMainLayout {
+  private def buildMainLayout() {
     setMainWindow(new Window("Address Book Demo Application"))
     val layout = new VerticalLayout
     layout.setSizeFull()
@@ -80,7 +80,7 @@ class Application extends VaadinApplication {
 
   private def onAddContact(event: ButtonClickEvent) {
     showListView()
-    personForm.addContact
+    personForm.addContact()
   }
 
 }

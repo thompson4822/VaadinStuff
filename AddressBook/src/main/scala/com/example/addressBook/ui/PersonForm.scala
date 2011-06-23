@@ -46,8 +46,8 @@ class PersonForm(dataSource: PersonContainer) extends Form {
     import scala.collection.JavaConverters._
     newContactMode = false
     newDataSource match {
-      case dataSource if(dataSource != null) =>
-        super.setItemDataSource(dataSource, PersonList.columnDefinitions.map(col => col.field).asJavaCollection)
+      case myDataSource if(myDataSource != null) =>
+        super.setItemDataSource(myDataSource, PersonList.columnDefinitions.map(col => col.field).asJavaCollection)
         setReadOnly(true)
       case _ =>
         super.setItemDataSource(null)

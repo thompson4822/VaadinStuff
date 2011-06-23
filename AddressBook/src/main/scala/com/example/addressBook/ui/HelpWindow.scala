@@ -11,11 +11,14 @@ object HelpWindow {
 class HelpWindow extends Window {
   setCaption("Address Book help")
   addComponent(new HtmlLabel(HelpWindow.helpHtmlSnippet))
+
 }
 
 class SharingOptions extends Window {
   setModal(true)
-  setWidth(50 percent)
+  this.setHorizontalExtent(50 percent)
+  this.width = (50 percent)
+  //this.width = 50 percent
   center()
 
   setCaption("Sharing options")

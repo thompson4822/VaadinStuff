@@ -17,7 +17,7 @@ class Project(info: ProjectInfo) extends ParentProject(info) {
   
   class ScalaVaadinProject(info: ProjectInfo) extends DefaultProject(info)
   {
-    val vaadinVersion = "6.6.0"
+    val vaadinVersion = "6.6.2"
 
     val jettyDep = "org.mortbay.jetty" % "jetty" % "6.1.18" % "test->default"
     val vaadinDep = "com.vaadin" % "vaadin" % vaadinVersion

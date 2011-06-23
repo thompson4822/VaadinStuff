@@ -11,7 +11,7 @@ class BookProjectApplication extends VaadinApplication {
     val mainWindow = new Window("BookProject Application")
     setMainWindow(mainWindow)
 
-    val titleLabel = new HtmlLabel("<h1>Book Application</h1>")
+    val titleLabel = Label(<h1>Book Application</h1>)
     mainWindow.addComponent(titleLabel)
 
     displayTable(bookList, mainWindow)
@@ -25,7 +25,7 @@ class BookProjectApplication extends VaadinApplication {
     val table = new Table
     table.setSelectable(true)
     table.setContainerDataSource(new BeanItemContainer(bookList.asJava))
-    table.setHeight(100 px)
+    table.setVerticalExtent(100 px)
     table.addListener({
       _ =>
       val selectedBook = table.getValue.asInstanceOf[Book]

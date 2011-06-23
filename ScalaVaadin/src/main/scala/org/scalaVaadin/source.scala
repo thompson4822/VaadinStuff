@@ -3,6 +3,7 @@ package org
 import scala.xml.Elem
 import com.vaadin.event.ItemClickEvent.ItemClickListener
 import scala.collection.JavaConverters._
+import com.vaadin.ui.AbstractSplitPanel
 
 package object scalaVaadin {
   //type AbstractInMemoryContainer[ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS] = com.vaadin.data.util.AbstractInMemoryContainer[ITEMIDTYPE, PROPERTYIDCLASS, ITEMCLASS]
@@ -33,6 +34,7 @@ package object scalaVaadin {
   type ReadOnlyStatusChangeEvent = com.vaadin.data.Property.ReadOnlyStatusChangeEvent
   type RepaintRequestEvent = com.vaadin.terminal.Paintable.RepaintRequestEvent
   type Resource = com.vaadin.terminal.Resource
+  type SplitterClickEvent = com.vaadin.ui.AbstractSplitPanel#SplitterClickEvent
   type TextArea = com.vaadin.ui.TextArea
   type TextField = com.vaadin.ui.TextField
   type ThemeResource = com.vaadin.terminal.ThemeResource
@@ -135,6 +137,18 @@ package object scalaVaadin {
 
   ///////////////////////////////////////////////////////////////////
   //
+  // RichAbstractProperty
+  //
+  ///////////////////////////////////////////////////////////////////
+  implicit def abstractPropertyToRichAbstractProperty(property: com.vaadin.data.util.AbstractProperty) = new RichAbstractProperty(property)
+
+  class RichAbstractProperty(field: com.vaadin.data.util.AbstractProperty) {
+    def onValueChange(action: ValueChangeEvent => Unit) = field.addListener(new ValueChangeListener(action))
+    def onReadOnlyStatusChange(action: ReadOnlyStatusChangeEvent => Unit) = field.addListener(new ReadOnlyStatusChangeListener(action))
+  }
+
+  ///////////////////////////////////////////////////////////////////
+  //
   // RichAbstractSplitPanel
   //
   ///////////////////////////////////////////////////////////////////
@@ -142,6 +156,12 @@ package object scalaVaadin {
     new RichAbstractSplitPanel(panel)
 
   class RichAbstractSplitPanel(panel: com.vaadin.ui.AbstractSplitPanel) {
+    class SplitterClickListener(action: SplitterClickEvent => Unit) extends com.vaadin.ui.AbstractSplitPanel.SplitterClickListener {
+      def splitterClick(event: SplitterClickEvent) { action(event) }
+    }
+
+    def onSplitterClick(action: SplitterClickEvent => Unit) { panel.addListener(new SplitterClickListener(action)) }
+
     def setSplitPosition(extent: UnitExtent, reverse: Boolean = false) {
       panel.setSplitPosition(extent.value.toInt, extent.unit, reverse)
     }
@@ -182,6 +202,21 @@ package object scalaVaadin {
     def onAttach(action: ComponentAttachEvent => Unit) { container.addListener(new ComponentAttachListener(action)) }
     def onDetach(action: ComponentDetachEvent => Unit) { container.addListener(new ComponentDetachListener(action)) }
     def addComponents(components: com.vaadin.ui.Component*) { components.foreach(container.addComponent(_)) }
+  }
+
+  ///////////////////////////////////////////////////////////////////
+  //
+  // RichPaintable
+  //
+  ///////////////////////////////////////////////////////////////////
+  implicit def paintableToRichPaintable(paintable: com.vaadin.terminal.Paintable) = new RichPaintable(paintable)
+
+  class RichPaintable(paintable: com.vaadin.terminal.Paintable) {
+    class RepaintEventListener(action: RepaintRequestEvent => Unit) extends com.vaadin.terminal.Paintable.RepaintRequestListener {
+      def repaintRequested(event: RepaintRequestEvent) { action(event) }
+    }
+
+    def onRepaint(action: RepaintRequestEvent => Unit) = paintable.addListener(new RepaintEventListener(action))
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -288,10 +323,6 @@ package object scalaVaadin {
     override def valueChange(event:ValueChangeEvent) { f(event) }
   }
 
-  class HtmlLabel(text: String) extends Label(text, com.vaadin.ui.Label.CONTENT_XHTML) {
-    def this(html:Elem) = { this(html.toString()) }
-  }
-
   ///////////////////////////////////////////////////////////////////
   //
   // Table Related
@@ -382,19 +413,12 @@ package object scalaVaadin {
     def windowClose(event: WindowCloseEvent) { action(event) }
   }
 
-  ///////////////////////////////////////////////////////////////////
-  //
-  // RichPaintable
-  //
-  ///////////////////////////////////////////////////////////////////
-  implicit def paintableToRichPaintable(paintable: com.vaadin.terminal.Paintable) = new RichPaintable(paintable)
-
-  class RichPaintable(paintable: com.vaadin.terminal.Paintable) {
-    class RepaintEventListener(action: RepaintRequestEvent => Unit) extends com.vaadin.terminal.Paintable.RepaintRequestListener {
-      def repaintRequested(event: RepaintRequestEvent) { action(event) }
-    }
-
-    def onRepaint(action: RepaintRequestEvent => Unit) = paintable.addListener(new RepaintEventListener(action))
+  class HtmlLabel(text: String) extends Label(text, com.vaadin.ui.Label.CONTENT_XHTML) {
+    def this(html:Elem) = { this(html.toString()) }
   }
-}
 
+  object Label {
+    def apply(html: Elem) = new Label(html.toString(), com.vaadin.ui.Label.CONTENT_XHTML)
+  }
+
+}

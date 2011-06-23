@@ -7,7 +7,7 @@ object NavigationTree {
   val SEARCH = "Search"
 }
 
-class NavigationTree(action: ItemClickEvent => Unit) extends Tree(action) {
+class NavigationTree(action: ItemClickEvent => Unit) extends Tree(action = action) {
   import NavigationTree._
   addItem(SHOW_ALL)
   addItem(SEARCH)
